@@ -97,6 +97,8 @@ def parameter_to_xml(parameter):
         parameter['default'] = ['None']
     if parameter['prefix'] != "":
         parameter['prefix'] = parameter['prefix'] + '.'
+    if len(parameter['name']) > 1:
+        parameter['name'] = ["".join(x for x in parameter['name']).replace("\\", "")]
     return f"# @param[in] param/{parameter['prefix']}{parameter['name'][0]} {parameter['prefix']}" \
            f"{parameter['name'][0]}/{parameter['default'][0]}/" \
            f"{parameter['type'][0]}/readwrite/False/{parameter['description']}\n"
