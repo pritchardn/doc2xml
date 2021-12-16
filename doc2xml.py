@@ -8,7 +8,6 @@ Since it is built to handle yanda components specifically, it is in this reposit
 import argparse
 import re
 import copy
-import json
 from enum import Enum, auto
 
 
@@ -35,11 +34,9 @@ def parse_lines_to_table(lines):
     :param lines: The lines to process
     :return: A dictionary containing strings for each found parameter
     """
-    table_lines = re.compile(r"\|[^\*].+\|")
     table_header = re.compile(r"(\+\=+){4}\+")
     end_of_table = re.compile(r"(\+\-+){4}\+")
     prefix_finder = re.compile(r"\*+.*\*+ prefix")
-    #prefix_finder = re.compile(r"\*+[a-zA-Z0-9\.]+\*+ prefix")
     output = []
     state = TableStates.FREE
     parameter_name = []
@@ -58,8 +55,9 @@ def parse_lines_to_table(lines):
                 prefix = prefix_finder.findall(line)[0].split(" ")[0].replace('*', '')
 
         elif state == TableStates.FIELD:
-            parameter_name, parameter_type, parameter_default, parameter_description = parse_field_line(
-                parameter_name, parameter_type, parameter_default, parameter_description, line)
+            parameter_name, parameter_type, parameter_default, parameter_description = \
+                parse_field_line(parameter_name, parameter_type, parameter_default,
+                                 parameter_description, line)
             if end_of_table.match(line):
                 state = TableStates.FIELD_ENDING
                 print("IS THE FIELD ENDING?")
@@ -82,15 +80,15 @@ def parse_lines_to_table(lines):
             parameter_default = []
             parameter_description = []
             print("BACK TO FIELD MODE")
-            parameter_name, parameter_type, parameter_default, parameter_description = parse_field_line(
-                parameter_name, parameter_type, parameter_default, parameter_description, line)
+            parameter_name, parameter_type, parameter_default, parameter_description = \
+                parse_field_line(parameter_name, parameter_type, parameter_default,
+                                 parameter_description, line)
     return output
 
 
 def extract_table(filename):
     with open(filename, 'r', encoding='utf-8') as infile:
         lines = infile.readlines()
-    # return parse_lines_to_table(filename.split('/')[-1].split('.')[0], lines)
     return parse_lines_to_table(lines)
 
 
@@ -98,8 +96,9 @@ def parameter_to_xml(parameter):
     if parameter['default'] == []:
         parameter['default'] = ['None']
     if parameter['prefix'] != "":
-        parameter['prefix'] = parameter['prefix']+'.'
-    return f"# @param[in] param/{parameter['prefix']}{parameter['name'][0]} {parameter['prefix']}{parameter['name'][0]}/{parameter['default'][0]}/" \
+        parameter['prefix'] = parameter['prefix'] + '.'
+    return f"# @param[in] param/{parameter['prefix']}{parameter['name'][0]} {parameter['prefix']}" \
+           f"{parameter['name'][0]}/{parameter['default'][0]}/" \
            f"{parameter['type'][0]}/readwrite/False/{parameter['description']}\n"
 
 
